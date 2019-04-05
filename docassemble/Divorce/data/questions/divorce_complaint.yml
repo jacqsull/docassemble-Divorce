@@ -1,0 +1,272 @@
+metadata:
+  title: Divorce Complaint (Massachusetts Court System)
+  short title: Divorce Complaint
+  comment: One of several documents necessary when filing a Complaint for Divorce.
+---
+modules:
+  - docassemble.MACourts.macourts
+  - docassemble.base.util
+# - docassemble.gbls
+#---
+#include:
+#  - docassemble.gbls:basic-questions-gbls.yml
+---
+objects:
+  - macourts: MACourtList.using(courts=['probate_and_family_courts'])
+  - client: Individual
+  - plaintiff: Individual
+  - defendant: Individual
+  - opposing_party: Individual
+---
+mandatory: True
+code: |
+  client.name.first
+  selected_court
+  docket_number 
+  client.name.first
+  client.address.address
+  client.address.city
+  opposing_party.name.first
+  opposing_party.address.address
+  opposing_party.address.city
+  if client_role == 'Plaintiff':
+    plaintiff = client
+    defendant = opposing_party
+    plaintiff_address = client.address.address
+    plaintiff_city = client.address.city
+    plaintiff_county = client.address.county
+    plaintiff_state = client.address.state
+    plaintiff_zip = client.address.zip  
+    defendant_address = opposing_party.address.address
+    defendant_city = opposing_party.address.city
+    defendant_county = opposing_party.address.county
+    defendant_state = opposing_party.address.state
+    defendant_zip = opposing_party.address.zip     
+  else:
+    defendant = client
+    plaintiff = opposing_party
+    defendant_address = client.address.address 
+    defendant_city = client.address.city
+    defendant_county = client.address.county
+    defendant_state = client.address.state
+    defendant_zip = client.address.zip
+    plaintiff_address = opposing_party.address.address
+    plaintiff_city = opposing_party.address.city
+    plaintiff_county = opposing_party.county
+    plaintiff_state = opposing_party.address.state
+    plaintiff_zip = opposing_party.address.zip   
+  marriage_location
+  marriage_date
+  last_together_location
+  last_together_date
+  other_actions
+  breakdown_date
+  custody_grant
+  custody  
+  atty_name
+  atty_address
+  target_variable
+  signature_date
+  bbo_number
+  some_event
+---
+field: testing_court
+question: |
+  The court
+subquestion: |  
+  ${selected_court.address}
+  
+  ${selected_court.address.county}
+  
+  ${selected_court.description}
+---
+question: |
+  What court is the case in?
+fields:
+  - Choose a court: selected_court
+    required: False  
+    datatype: object
+    choices: |
+      macourts 
+---
+question: |
+  ${selected_court} ${selected_court.address.on_one_line()}
+---
+mandatory: True
+question: |
+  What is the docket number?
+fields:
+  - Docket number: docket_number
+    required: False
+    datatype: text
+---
+question: |
+  What is your client's name? 
+fields:
+  - First name: client.name.first
+  - Last name: client.name.last
+---
+question: |
+  What is your client's address? 
+fields:
+  - Street address: client.address.address
+  - City: client.address.city
+  - County: client.address.county
+  - State: client.address.state
+  - Zipcode: client.address.zip
+---
+question: |
+  What is the opposing party's name? 
+fields:
+  - First name: opposing_party.name.first
+  - Last name: opposing_party.name.last
+---
+question: |
+  What is the opposing party's address? 
+fields:
+  - Street address: opposing_party.address.address
+  - City: opposing_party.address.city
+  - County: opposing_party.address.county
+  - State: opposing_party.address.state
+  - Zipcode: opposing_party.address.zip
+---
+question: |
+  Is your client the plaintiff or the defendant? 
+field: client_role
+choices: 
+  - Plaintiff
+  - Defendant
+---
+question: |
+  Where were the parties married?
+fields: 
+  - Marriage location: marriage_location
+    datatype: text
+---
+question: |
+  When were the parties married?
+fields: 
+  - Date of marriage: marriage_date  
+    datatype: date
+---
+question: |
+  Where did the parties last live together?
+fields: 
+  - Last lived together location: last_together_location
+    datatype: text
+---
+question: |
+  When did the parties last live together?
+fields: 
+  - Last lived together date: last_together_date  
+    datatype: date
+---
+question: Result of question
+subquestion: |
+  You told me that: 
+  You last lived together at: "${ last_together_location }" on "${ last_together_date }"  
+mandatory: True
+field: results_screen
+---
+question: |
+  Describe details of previous actions (type, court, docket, status) or write "not applicable":
+fields:
+  - no label: other_actions
+	  datatype: area
+---
+question: |
+  When was the date (can be approximate) of the irretrievable breakdown?
+fields: 
+  - Date of irretrievable breakdown: breakdown_date  
+    datatype: date
+---
+question: |
+  Grant custody of the child/ren?
+yesno: custody_grant
+---
+question: |
+  Who should have custody of the child/ren?
+fields: 
+  - no label: custody
+    input type: radio
+    choices:
+      - Plaintiff
+      - Defendant
+---
+question: |
+  What is your name?
+fields:
+  - Attorney name: atty_name
+    datatype: text
+---
+question: |
+  What is your address and phone number? 
+fields:
+  - Street address: atty_address
+  - City: atty_city
+  - State: atty_state
+  - Zipcode: atty_zip
+  - Phone Number: atty_tel_no
+---
+question: |
+  Sign your name
+subquestion: |
+  By signing your name, you agree to
+  our terms and conditions.
+signature: target_variable
+under: |
+  ${ atty_name }
+---
+question: |
+  What is the date of signing?
+fields:
+  - Dated: signature_date
+    datatype: date
+---
+question: |
+  What is your BBO number?
+fields:
+  - BBO number: bbo_number
+    datatype: text
+---
+mandatory: True
+question: Here is your document.
+event: some_event
+attachment:
+  - name: divorce_complaint
+    filename: divorce_complaint
+    pdf template file: divorce_complaint.pdf
+    fields:
+      - "selected_court.address.county": ${selected_court.address.county}
+      - "plaintiff": ${plaintiff}
+      - "defendant": ${defendant}
+      - "docket_number": ${docket_number}
+      - "plaintiff_address": ${plaintiff_address}
+      - "plaintiff_city": ${plaintiff_city}
+      - "plaintiff_county": ${plaintiff_county}
+      - "plaintiff_state": ${plaintiff_state}
+      - "plaintiff_zip": ${plaintiff_zip}
+      - "defendant_address": ${defendant_address}
+      - "defendant_city": ${defendant_city}
+      - "defendant_county": ${defendant_county}
+      - "defendant_state": ${defendant_state}
+      - "defendant_zip": ${defendant_zip}
+      - "marriage_location": ${marriage_location}
+      - "marriage_date": ${marriage_date}
+      - "last_together_location": ${last_together_location}
+      - "last_together_date": ${last_together_date}
+      - "breakdown_date": ${breakdown_date}
+      - "other_actions": ${other_actions}
+      - "custody_grant": ${custody_grant}
+      - "custody": ${custody}
+      - "signature": ${target_variable}
+      - "signature_date": ${signature_date}
+      - "atty_name": ${atty_name}
+      - "atty_address": ${atty_address}
+      - "atty_city": ${atty_city}
+      - "atty_state": ${atty_state}
+      - "atty_zip": ${atty_zip}
+      - "atty_tel_no": ${atty_tel_no}
+      - "bbo_number": ${bbo_number}
+      
+---

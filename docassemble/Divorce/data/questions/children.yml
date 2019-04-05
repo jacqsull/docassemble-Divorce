@@ -1,0 +1,43 @@
+---
+modules:
+  - docassemble.base.util
+---
+objects:
+  - children: ChildList.using(ask_number=True)
+---
+mandatory: True
+question:  |
+  Does your client have any children?
+fields: 
+  - no label: children.there_are_any
+    datatype: yesnoradio
+  - "How many children does your client have?": children.target_number
+    datatype: integer
+    show if: children.there_are_any
+---  
+question: |
+  What is the name and birthdate of
+  % if children.number() == 1:
+    your client's
+  % elif i==0:
+    your client's eldest
+  % else:
+    your client's ${ordinal(i)}
+  % endif
+  child.
+fields:
+  - first name: children[i].name.first
+  - middle name: children[i].name.middle
+    required: False
+  - last name: children[i].name.last
+  - birthdate: children[i].birthdate
+    datatype: date
+---  
+mandatory: True
+question: |
+ Here is the information about the children:
+ 
+ % for child in children:
+ * ${child}, ${child.birthdate}  
+ % endfor
+---
