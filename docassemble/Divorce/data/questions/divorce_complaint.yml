@@ -17,6 +17,7 @@ objects:
   - plaintiff: Individual
   - defendant: Individual
   - opposing_party: Individual
+  - children: ChildList.using(ask_number=True)
 ---
 mandatory: True
 code: |
@@ -59,6 +60,7 @@ code: |
   marriage_date
   last_together_location
   last_together_date
+  children.there_are_any
   other_actions
   breakdown_date
   custody_grant
@@ -161,12 +163,40 @@ fields:
   - Last lived together date: last_together_date  
     datatype: date
 ---
-question: Result of question
-subquestion: |
-  You told me that: 
-  You last lived together at: "${ last_together_location }" on "${ last_together_date }"  
+question:  |
+  Does your client have any children?
+fields: 
+  - no label: children.there_are_any
+    datatype: yesnoradio
+  - "How many children does your client have?": children.target_number
+    datatype: integer
+    show if: children.there_are_any
+---
+question: |
+  What is the name and birthdate of
+  % if children.number() == 1:
+    your client's
+  % elif i==0:
+    your client's eldest
+  % else:
+    your client's ${ordinal(i)}
+  % endif
+  child.
+fields:
+  - first name: children[i].name.first
+  - middle name: children[i].name.middle
+    required: False
+  - last name: children[i].name.last
+  - birthdate: children[i].birthdate
+    datatype: date
+---  
 mandatory: True
-field: results_screen
+question: |
+ Here is the information about the children:
+ 
+ % for child in children:
+ * ${child}, ${child.birthdate}  
+ % endfor
 ---
 question: |
   Describe details of previous actions (type, court, docket, status) or write "not applicable":
@@ -255,6 +285,14 @@ attachment:
       - "marriage_date": ${marriage_date}
       - "last_together_location": ${last_together_location}
       - "last_together_date": ${last_together_date}
+      - "children[0].name": ${children[0].name}
+      - "children[0].birthdate": ${children[0].birthdate}
+      - "children[1].name": ${children[1].name}
+      - "children[1].birthdate": ${children[1].birthdate}
+      - "children[2].name": ${children[2].name}
+      - "children[2].birthdate": ${children[2].birthdate}
+      - "children[3].name": ${children[3].name}
+      - "children[3].birthdate": ${children[3].birthdate}       
       - "breakdown_date": ${breakdown_date}
       - "other_actions": ${other_actions}
       - "custody_grant": ${custody_grant}

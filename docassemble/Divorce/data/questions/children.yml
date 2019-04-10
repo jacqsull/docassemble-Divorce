@@ -8,7 +8,6 @@ objects:
 mandatory: True
 code:  |
   children.there_are_any
-  children[i].name.first
   some_event
 ---
 question:  |
@@ -46,6 +45,7 @@ question: |
  * ${child}, ${child.birthdate}  
  % endfor
 ---
+mandatory: True
 question: Here is your document.
 event: some_event
 attachment:
@@ -53,6 +53,12 @@ attachment:
     filename: divorce_complaint
     pdf template file: divorce_complaint.pdf
     fields:
-      - "children[0]" = ${children[0]} 
-      - "children[1]" = ${children[1]}
+      - "children[0].name": ${children[0].name}
+      - "children[0].birthdate": ${children[0].birthdate}
+      - "children[1].name": ${children[1].name}
+      - "children[1].birthdate": ${children[1].birthdate}
+      - "children[2].name": ${children[2].name}
+      - "children[2].birthdate": ${children[2].birthdate}
+      - "children[3].name": ${children[3].name}
+      - "children[3].birthdate": ${children[3].birthdate}
 ---

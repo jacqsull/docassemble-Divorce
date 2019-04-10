@@ -1,1 +1,8 @@
-First draft of divorce package
+# docassemble.Divorce
+
+A docassemble extension.
+
+## Author
+
+Jacqueline Sullivan, jacqsull@legalservicesma.org
+
