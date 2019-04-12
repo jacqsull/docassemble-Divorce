@@ -61,10 +61,16 @@ code: |
   last_together_location
   last_together_date
   children.there_are_any
+  children.gather()
   other_actions
   breakdown_date
   custody_grant
   custody  
+  if support_order == False:
+    support_plaintiff = False
+    support_children = False
+  else: 
+    support
   atty_name
   atty_address
   target_variable
@@ -112,6 +118,7 @@ question: |
   What is your client's address? 
 fields:
   - Street address: client.address.address
+    address autocomplete: True
   - City: client.address.city
   - County: client.address.county
   - State: client.address.state
@@ -127,6 +134,7 @@ question: |
   What is the opposing party's address? 
 fields:
   - Street address: opposing_party.address.address
+    address autocomplete: True
   - City: opposing_party.address.city
   - County: opposing_party.address.county
   - State: opposing_party.address.state
@@ -224,7 +232,24 @@ fields:
       - Defendant
 ---
 question: |
-  What is your name?
+  Order support?
+fields:
+  - no label: support_order
+    datatype: yesnoradio
+---    
+question: |
+ For whom should support be ordered?
+fields: 
+  - no label: support   
+    datatype: checkboxes
+    choices:
+      - Plaintiff: support_plaintiff
+      - Children: support_children
+    none of the above: False
+    show if: support_order
+---
+question: |
+  What is your name (attorney's)?
 fields:
   - Attorney name: atty_name
     datatype: text
@@ -285,18 +310,21 @@ attachment:
       - "marriage_date": ${marriage_date}
       - "last_together_location": ${last_together_location}
       - "last_together_date": ${last_together_date}
-      - "children[0].name": ${children[0].name}
-      - "children[0].birthdate": ${children[0].birthdate}
-      - "children[1].name": ${children[1].name}
-      - "children[1].birthdate": ${children[1].birthdate}
-      - "children[2].name": ${children[2].name}
-      - "children[2].birthdate": ${children[2].birthdate}
-      - "children[3].name": ${children[3].name}
-      - "children[3].birthdate": ${children[3].birthdate}       
+      - "children[0].name": ${children.item(0).name}
+      - "children[0].birthdate": ${children.item(0).birthdate}
+      - "children[1].name": ${children.item(1).name}
+      - "children[1].birthdate": ${children.item(1).birthdate}
+      - "children[2].name": ${children.item(2).name}
+      - "children[2].birthdate": ${children.item(2).birthdate}
+      - "children[3].name": ${children.item(3).name}
+      - "children[3].birthdate": ${children.item(3).birthdate}       
       - "breakdown_date": ${breakdown_date}
       - "other_actions": ${other_actions}
       - "custody_grant": ${custody_grant}
       - "custody": ${custody}
+      - "support_order": ${support_order}
+      - "support_plaintiff": ${support_plaintiff} 
+      - "support_children": ${support_children}     
       - "signature": ${target_variable}
       - "signature_date": ${signature_date}
       - "atty_name": ${atty_name}
@@ -305,6 +333,5 @@ attachment:
       - "atty_state": ${atty_state}
       - "atty_zip": ${atty_zip}
       - "atty_tel_no": ${atty_tel_no}
-      - "bbo_number": ${bbo_number}
-      
+      - "bbo_number": ${bbo_number} 
 ---
