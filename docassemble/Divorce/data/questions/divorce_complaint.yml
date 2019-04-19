@@ -64,13 +64,9 @@ code: |
   children.gather()
   other_actions
   breakdown_date
-  custody_grant
-  custody  
-  if support_order == False:
-    support_plaintiff = False
-    support_children = False
-  else: 
-    support
+  if children.there_are_any: 
+    custody_grant
+  support_order  
   atty_name
   atty_address
   target_variable
@@ -218,35 +214,30 @@ fields:
   - Date of irretrievable breakdown: breakdown_date  
     datatype: date
 ---
-question: |
-  Grant custody of the child/ren?
-yesno: custody_grant
----
-question: |
-  Who should have custody of the child/ren?
+question:   
+  Custody
 fields: 
-  - no label: custody
+  - "Grant custody of the child/ren?": custody_grant
+    datatype: yesnoradio
+  - "Who should have custody of the child/ren?": custody
     input type: radio
     choices:
       - Plaintiff
       - Defendant
+    show if: custody_grant
 ---
 question: |
-  Order support?
-fields:
-  - no label: support_order
-    datatype: yesnoradio
----    
-question: |
- For whom should support be ordered?
+  Support
 fields: 
-  - no label: support   
-    datatype: checkboxes
+  - "Order support?": support_order
+    datatype: yesnoradio
+  - "For whom should support be ordered?": support
+    input type: radio
     choices:
-      - Plaintiff: support_plaintiff
-      - Children: support_children
-    none of the above: False
-    show if: support_order
+      - Plaintiff
+      - Children
+      - Plaintiff and Children
+    show if: support_order      
 ---
 question: |
   What is your name (attorney's)?
@@ -291,47 +282,47 @@ attachment:
   - name: divorce_complaint
     filename: divorce_complaint
     pdf template file: divorce_complaint.pdf
-    fields:
-      - "selected_court.address.county": ${selected_court.address.county}
-      - "plaintiff": ${plaintiff}
-      - "defendant": ${defendant}
-      - "docket_number": ${docket_number}
-      - "plaintiff_address": ${plaintiff_address}
-      - "plaintiff_city": ${plaintiff_city}
-      - "plaintiff_county": ${plaintiff_county}
-      - "plaintiff_state": ${plaintiff_state}
-      - "plaintiff_zip": ${plaintiff_zip}
-      - "defendant_address": ${defendant_address}
-      - "defendant_city": ${defendant_city}
-      - "defendant_county": ${defendant_county}
-      - "defendant_state": ${defendant_state}
-      - "defendant_zip": ${defendant_zip}
-      - "marriage_location": ${marriage_location}
-      - "marriage_date": ${marriage_date}
-      - "last_together_location": ${last_together_location}
-      - "last_together_date": ${last_together_date}
-      - "children[0].name": ${children.item(0).name}
-      - "children[0].birthdate": ${children.item(0).birthdate}
-      - "children[1].name": ${children.item(1).name}
-      - "children[1].birthdate": ${children.item(1).birthdate}
-      - "children[2].name": ${children.item(2).name}
-      - "children[2].birthdate": ${children.item(2).birthdate}
-      - "children[3].name": ${children.item(3).name}
-      - "children[3].birthdate": ${children.item(3).birthdate}       
-      - "breakdown_date": ${breakdown_date}
-      - "other_actions": ${other_actions}
-      - "custody_grant": ${custody_grant}
-      - "custody": ${custody}
-      - "support_order": ${support_order}
-      - "support_plaintiff": ${support_plaintiff} 
-      - "support_children": ${support_children}     
-      - "signature": ${target_variable}
-      - "signature_date": ${signature_date}
-      - "atty_name": ${atty_name}
-      - "atty_address": ${atty_address}
-      - "atty_city": ${atty_city}
-      - "atty_state": ${atty_state}
-      - "atty_zip": ${atty_zip}
-      - "atty_tel_no": ${atty_tel_no}
-      - "bbo_number": ${bbo_number} 
+    field code:
+      - "selected_court.address.county": selected_court.address.county
+      - "plaintiff": plaintiff
+      - "defendant": defendant
+      - "docket_number": docket_number
+      - "plaintiff_address": plaintiff_address
+      - "plaintiff_city": plaintiff_city
+      - "plaintiff_county": plaintiff_county
+      - "plaintiff_state": plaintiff_state
+      - "plaintiff_zip": plaintiff_zip
+      - "defendant_address": defendant_address
+      - "defendant_city": defendant_city
+      - "defendant_county": defendant_county
+      - "defendant_state": defendant_state
+      - "defendant_zip": defendant_zip
+      - "marriage_location": marriage_location
+      - "marriage_date": marriage_date
+      - "last_together_location": last_together_location
+      - "last_together_date": last_together_date
+      - "children[0].name": children.item(0).name
+      - "children[0].birthdate": children.item(0).birthdate
+      - "children[1].name": children.item(1).name
+      - "children[1].birthdate": children.item(1).birthdate
+      - "children[2].name": children.item(2).name
+      - "children[2].birthdate": children.item(2).birthdate
+      - "children[3].name": children.item(3).name
+      - "children[3].birthdate": children.item(3).birthdate       
+      - "breakdown_date": breakdown_date
+      - "other_actions": other_actions
+      - "custody_grant": showif(custody_grant, children.there_are_any, False)
+      - "custody": showif('custody', custody_grant, 'None')
+      - "support_order": support_order
+      - "support_children": support == 'Children' or support == 'Plaintiff and Children' if support_order else False
+      - "support_plaintiff": support == 'Plaintiff' or support == 'Plaintiff and Children' if support_order else False  
+      - "signature": target_variable
+      - "signature_date": signature_date
+      - "atty_name": atty_name
+      - "atty_address": atty_address
+      - "atty_city": atty_city
+      - "atty_state": atty_state
+      - "atty_zip": atty_zip
+      - "atty_tel_no": atty_tel_no
+      - "bbo_number": bbo_number 
 ---
