@@ -4,7 +4,7 @@ metadata:
   comment: One of several documents necessary when filing a Complaint for Divorce.
 ---
 modules:
-  - docassemble.MACourts.macourts
+#  - docassemble.MACourts.macourts
   - docassemble.base.util
 # - docassemble.gbls
 #---
@@ -22,7 +22,7 @@ objects:
 mandatory: True
 code: |
   client.name.first
-  selected_court
+  #  selected_court
   docket_number 
   client.name.first
   client.address.address
@@ -66,7 +66,11 @@ code: |
   breakdown_date
   if children.there_are_any: 
     custody_grant
+  prohibit_restraint
   support_order  
+  real_estate_order
+  plaintiff_resume_former_name
+  other_request_grant
   atty_name
   atty_address
   target_variable
@@ -227,6 +231,13 @@ fields:
     show if: custody_grant
 ---
 question: |
+  Restraint
+fields: 
+  - "Prohibit defendant from imposing any restrain on plaintiff's personal liberty?": prohibit_restraint
+    datatype: yesnoradio
+---
+if: children.there_are_any
+question: |
   Support
 fields: 
   - "Order support?": support_order
@@ -237,8 +248,54 @@ fields:
       - Plaintiff
       - Children
       - Plaintiff and Children
-    show if: support_order      
+    show if: support_order
 ---
+if: not children.there_are_any
+question: |
+  Support
+fields: 
+  - "Order support?": support_order
+    datatype: yesnoradio
+---
+question:   
+  Real Estate
+fields: 
+  - "Order conveyance of real estate": real_estate_order
+    datatype: yesnoradio
+  - "Address": real_estate_location
+    datatype: text
+    show if: real_estate_order
+  - "Title": real_estate_title
+    datatype: text
+    show if: real_estate_order
+  - "County of recording?": real_estate_county_recorded
+    datatype: text
+    show if: real_estate_order
+  - "Book (or Certificate of Title No.)": registry_book_number
+    datatype: text
+    show if: real_estate_order
+  - "Page": registry_page_number
+    datatype: text
+    show if: real_estate_order
+---
+question: |
+  Former name
+fields: 
+  - "Allow plaintiff to resume former name?": plaintiff_resume_former_name
+    datatype: yesnoradio
+  - "Former name?": plaintiff_former_name
+    datatype: text
+    show if: plaintiff_resume_former_name
+---
+question: |
+  Other requests
+fields: 
+  - "Does plaintiff have other requests?": other_request_grant
+	  datatype: yesnoradio
+  - "Please list out:": other_requests_description
+    datatype: area
+    show if: other_request_grant   
+---   
 question: |
   What is your name (attorney's)?
 fields:
@@ -268,6 +325,7 @@ question: |
 fields:
   - Dated: signature_date
     datatype: date
+    default: ${format_date(today(), 'yyyy-MM-dd')}
 ---
 question: |
   What is your BBO number?
@@ -283,7 +341,7 @@ attachment:
     filename: divorce_complaint
     pdf template file: divorce_complaint.pdf
     field code:
-      - "selected_court.address.county": selected_court.address.county
+      #  - "selected_court.address.county": selected_court.address.county
       - "plaintiff": plaintiff
       - "defendant": defendant
       - "docket_number": docket_number
@@ -311,11 +369,22 @@ attachment:
       - "children[3].birthdate": children.item(3).birthdate       
       - "breakdown_date": breakdown_date
       - "other_actions": other_actions
-      - "custody_grant": showif(custody_grant, children.there_are_any, False)
-      - "custody": showif('custody', custody_grant, 'None')
+      - "custody_grant": custody_grant if children.there_are_any else False
+      - "custody": custody if children.there_are_any and custody_grant else 'None'
+      - "prohibit_restraint": prohibit_restraint
       - "support_order": support_order
-      - "support_children": support == 'Children' or support == 'Plaintiff and Children' if support_order else False
-      - "support_plaintiff": support == 'Plaintiff' or support == 'Plaintiff and Children' if support_order else False  
+      - "support_children": support in ['Children', 'Plaintiff and Children'] if support_order and children.there_are_any else False  
+      - "support_plaintiff": support in ['Plaintiff', 'Plaintiff and Children'] if support_order and children.there_are_any else support_order  
+      - "real_estate_order": real_estate_order
+      - "real_estate_location": real_estate_location if real_estate_order else ''
+      - "real_estate_title": real_estate_title if real_estate_order else ''
+      - "real_estate_county_recorded": real_estate_county_recorded if real_estate_order else ''
+      - "registry_book_number": registry_book_number if real_estate_order else ''
+      - "registry_page_number": registry_page_number if real_estate_order else ''
+      - "plaintiff_resume_former_name": plaintiff_resume_former_name
+      - "plaintiff_former_name": plaintiff_former_name if plaintiff_resume_former_name else ''
+      - "other_request_grant": other_request_grant
+      - "other_requests_description": other_requests_description if other_request_grant else ''
       - "signature": target_variable
       - "signature_date": signature_date
       - "atty_name": atty_name
